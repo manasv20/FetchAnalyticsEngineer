@@ -1,0 +1,6 @@
+Hi [Product/Business Leader],
+
+Our recent analysis has uncovered several data quality issues that need addressing. We found significant missing values in key columns across our datasets, such as bonusPointsEarned and totalSpent in receipts, category and categoryCode in brands, and description and finalPrice in receipt items. Unix timestamps were also found in mixed formats (milliseconds and scientific notation), necessitating conversion to standard datetime objects. Additionally, user data shows a heavy concentration in Wisconsin and a strong reliance on email for sign-ups, with minimal use of Google. To resolve these issues, we need to refine our data collection methods, define clear imputation strategies, and expand our geographic and platform reach. Partnering with Apple, X, and Facebook for sign-ups could diversify our user base and enhance verification processes. Optimizing our data assets will involve understanding end-user requirements, integrating additional data sources, and addressing performance concerns through efficient storage solutions, indexing, and caching mechanisms to ensure scalability and responsiveness in production. I'd be happy to walk you through any questions you have about the users, receipts, receipt items, and the brands we work with.
+
+Best regards,
+Manas Verma

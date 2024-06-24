@@ -1,1 +1,105 @@
-﻿-- Question 1: What are the top 5 brands by receipts scanned for the most recent month?SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS occurrence_countFROM receiptsJOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_idJOIN brands ON receipt_items.barcode WHERE strftime('%Y-%m', receipts.purchaseDate) = (  SELECT strftime('%Y-%m', MAX(purchaseDate))  FROM receipts  WHERE purchaseDate IS NOT NULL)AND brands.brandCode IS NOT NULLAND receipts.purchaseDate IS NOT NULLAND receipt_items.barcode IS NOT NULLAND receipts.receipt_id IS NOT NULLGROUP BY brands.brandCodeORDER BY occurrence_count DESCLIMIT 5;-- Question 2: How does the ranking of the top 5 brands by receipts scanned for the recent month compare to the ranking for the previous month?SELECT strftime('%Y-%m', MAX(purchaseDate)) AS recent_monthFROM receiptsWHERE purchaseDate IS NOT NULL;SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS occurrence_countFROM receiptsJOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_idJOIN brands ON receipt_items.barcode WHERE strftime('%Y-%m', receipts.purchaseDate) = '2021-03'AND brands.brandCode IS NOT NULLAND receipts.purchaseDate IS NOT NULLAND receipt_items.barcode IS NOT NULLAND receipts.receipt_id IS NOT NULLGROUP BY brands.brandCodeORDER BY occurrence_count DESCLIMIT 5;SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS occurrence_countFROM receiptsJOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_idJOIN brands ON receipt_items.barcode WHERE strftime('%Y-%m', receipts.purchaseDate) = '2021-02'AND brands.brandCode IS NOT NULLAND receipts.purchaseDate IS NOT NULLAND receipt_items.barcode IS NOT NULLAND receipts.receipt_id IS NOT NULLGROUP BY brands.brandCodeORDER BY occurrence_count DESCLIMIT 5;-- Question 3: When considering average spend from receipts with 'rewardsReceiptStatus’ of ‘Accepted’ or ‘Rejected’, which is greater?SELECT     rewardsReceiptStatus,    AVG(totalSpent) AS average_spendFROM     receiptsWHERE     rewardsReceiptStatus IN ('FINISHED', 'REJECTED')GROUP BY     rewardsReceiptStatus;-- Question 4: When considering total number of items purchased from receipts with 'rewardsReceiptStatus’ of ‘Accepted’ or ‘Rejected’, which is greater?SELECT     rewardsReceiptStatus,    SUM(purchasedItemCount) AS total_items_purchasedFROM     receiptsWHERE     rewardsReceiptStatus IN ('FINISHED', 'REJECTED')GROUP BY     rewardsReceiptStatus;-- Question 5: Which brand has the most spend among users who were created within the past 6 months?SELECT brands.brandCode, SUM(receipts.totalSpent) AS total_spentFROM usersJOIN receipts ON users.user_id = receipts.user_idJOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_idJOIN brands ON receipt_items.barcode WHERE users.createdDate >= DATE((SELECT MAX(purchaseDate) FROM receipts WHERE purchaseDate IS NOT NULL), '-6 months')AND brands.brandCode IS NOT NULLAND receipts.totalSpent IS NOT NULLAND receipt_items.barcode IS NOT NULLAND receipts.receipt_id IS NOT NULLGROUP BY brands.brandCodeORDER BY total_spent DESCLIMIT 1;-- Question 6: Which brand has the most transactions among users who were created within the past 6 months?SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS transaction_countFROM usersJOIN receipts ON users.user_id = receipts.user_idJOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_idJOIN brands ON receipt_items.barcode = CAST(CAST(brands.barcode AS INTEGER) AS TEXT)WHERE users.createdDate >= DATE((SELECT MAX(purchaseDate) FROM receipts WHERE purchaseDate IS NOT NULL), '-6 months')AND brands.brandCode IS NOT NULLAND receipt_items.barcode IS NOT NULLAND receipts.receipt_id IS NOT NULLGROUP BY brands.brandCodeORDER BY transaction_count DESCLIMIT 1;
+﻿-- Question 1: What are the top 5 brands by receipts scanned for the most recent month?
+
+SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS occurrence_count
+FROM receipts
+JOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_id
+JOIN brands ON receipt_items.barcode 
+WHERE strftime('%Y-%m', receipts.purchaseDate) = (
+  SELECT strftime('%Y-%m', MAX(purchaseDate))
+  FROM receipts
+  WHERE purchaseDate IS NOT NULL
+)
+AND brands.brandCode IS NOT NULL
+AND receipts.purchaseDate IS NOT NULL
+AND receipt_items.barcode IS NOT NULL
+AND receipts.receipt_id IS NOT NULL
+GROUP BY brands.brandCode
+ORDER BY occurrence_count DESC
+LIMIT 5;
+
+-- Question 2: How does the ranking of the top 5 brands by receipts scanned for the recent month compare to the ranking for the previous month?
+
+SELECT strftime('%Y-%m', MAX(purchaseDate)) AS recent_month
+FROM receipts
+WHERE purchaseDate IS NOT NULL;
+
+SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS occurrence_count
+FROM receipts
+JOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_id
+JOIN brands ON receipt_items.barcode 
+WHERE strftime('%Y-%m', receipts.purchaseDate) = '2021-03'
+AND brands.brandCode IS NOT NULL
+AND receipts.purchaseDate IS NOT NULL
+AND receipt_items.barcode IS NOT NULL
+AND receipts.receipt_id IS NOT NULL
+GROUP BY brands.brandCode
+ORDER BY occurrence_count DESC
+LIMIT 5;
+
+SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS occurrence_count
+FROM receipts
+JOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_id
+JOIN brands ON receipt_items.barcode 
+WHERE strftime('%Y-%m', receipts.purchaseDate) = '2021-02'
+AND brands.brandCode IS NOT NULL
+AND receipts.purchaseDate IS NOT NULL
+AND receipt_items.barcode IS NOT NULL
+AND receipts.receipt_id IS NOT NULL
+GROUP BY brands.brandCode
+ORDER BY occurrence_count DESC
+LIMIT 5;
+
+-- Question 3: When considering average spend from receipts with 'rewardsReceiptStatus’ of ‘Accepted’ or ‘Rejected’, which is greater?
+
+SELECT 
+    rewardsReceiptStatus,
+    AVG(totalSpent) AS average_spend
+FROM 
+    receipts
+WHERE 
+    rewardsReceiptStatus IN ('FINISHED', 'REJECTED')
+GROUP BY 
+    rewardsReceiptStatus;
+
+-- Question 4: When considering total number of items purchased from receipts with 'rewardsReceiptStatus’ of ‘Accepted’ or ‘Rejected’, which is greater?
+
+SELECT 
+    rewardsReceiptStatus,
+    SUM(purchasedItemCount) AS total_items_purchased
+FROM 
+    receipts
+WHERE 
+    rewardsReceiptStatus IN ('FINISHED', 'REJECTED')
+GROUP BY 
+    rewardsReceiptStatus;
+
+-- Question 5: Which brand has the most spend among users who were created within the past 6 months?
+
+SELECT brands.brandCode, SUM(receipts.totalSpent) AS total_spent
+FROM users
+JOIN receipts ON users.user_id = receipts.user_id
+JOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_id
+JOIN brands ON receipt_items.barcode 
+WHERE users.createdDate >= DATE((SELECT MAX(purchaseDate) FROM receipts WHERE purchaseDate IS NOT NULL), '-6 months')
+AND brands.brandCode IS NOT NULL
+AND receipts.totalSpent IS NOT NULL
+AND receipt_items.barcode IS NOT NULL
+AND receipts.receipt_id IS NOT NULL
+GROUP BY brands.brandCode
+ORDER BY total_spent DESC
+LIMIT 1;
+
+-- Question 6: Which brand has the most transactions among users who were created within the past 6 months?
+
+SELECT brands.brandCode, COUNT(receipt_items.receipt_id) AS transaction_count
+FROM users
+JOIN receipts ON users.user_id = receipts.user_id
+JOIN receipt_items ON receipts.receipt_id = receipt_items.receipt_id
+JOIN brands ON receipt_items.barcode = CAST(CAST(brands.barcode AS INTEGER) AS TEXT)
+WHERE users.createdDate >= DATE((SELECT MAX(purchaseDate) FROM receipts WHERE purchaseDate IS NOT NULL), '-6 months')
+AND brands.brandCode IS NOT NULL
+AND receipt_items.barcode IS NOT NULL
+AND receipts.receipt_id IS NOT NULL
+GROUP BY brands.brandCode
+ORDER BY transaction_count DESC
+LIMIT 1;
